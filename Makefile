@@ -1,0 +1,9 @@
+DEBUG = y
+
+ifeq($(DEBUG),y)
+	DFLAGS:= -O -g -DDEBUGPRINT
+else
+	DFLAGS:=O2
+endif
+
+CFLAGS+=DFLAGS
