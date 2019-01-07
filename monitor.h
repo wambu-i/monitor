@@ -2,6 +2,7 @@
 #define MONITOR_H
 
 #include <linux/kernel.h>
+#include <linux/semaphore.h>
 #include <linux/spinlock.h>
 #include <linux/module.h>
 #include <linux/fs.h>
@@ -31,18 +32,19 @@
 * @monitor_dev - the character device structure 
 */
 struct monitor_device {
-    splinlock_t lock;
+    spinlock_t lock;
     struct monitor_device *next_device;
     dev_t device;
     struct cdev monitor_cdev; 
-}
+};
 
-struct file_operations monitor_fops {
+struct file_operations monitor_fops = {
     .owner = THIS_MODULE
-}
+};
+
 struct monitor_device *devices;
 /* Function */
-int monitor_init();
+int monitor_init(void);
 void monitor_cleanup(void);
 void initialize_monitor_device(struct monitor_device *, int);
 

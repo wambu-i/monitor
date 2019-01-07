@@ -1,11 +1,16 @@
 #include <linux/types.h>
 #include <linux/errno.h>
-#include <monitor.h>
+#include "monitor.h"
 
+#define LICENSE "GPL"
+
+
+int monitor_major;
 
 int monitor_init(void) {
     int result;
     dev_t device;
+
     /*
     * Request a major number for the kernel and initialized the number of devices we want.
     * There should be one device for each GPIO.
@@ -38,9 +43,9 @@ void initialize_monitor_device(struct monitor_device *device, int index) {
     * Character devices have to be allocated and registered before use.
     * void cdev_init(struct cdev *cdev, struct file_operations *fops); 
     */
-    cdev_init(@device->monitor_cdev, &monitor_fops);
+    cdev_init(&device->monitor_cdev, &monitor_fops);
     device->monitor_cdev.owner = THIS_MODULE;
-    device->monitor_cdev.ops = monitor_fops;
+    device->monitor_cdev.ops = &monitor_fops;
     /*
     * Let the kernel know about our device.
     * cdev_add(struct cdev *dev, dev_t num, unsigned int count);
@@ -51,6 +56,9 @@ void initialize_monitor_device(struct monitor_device *device, int index) {
     /*
     * Registration can fail with an result less than 0.
     */ 
-    if (result):
-        printk(KERN_ALERT, "Failure adding monitor device %d with error code %d", index, result);
+    if (result) {
+        printk(KERN_ALERT "Failure adding monitor device %d with error code %d", index, result);
+    }
 }
+
+MODULE_LICENSE(LICENSE);
