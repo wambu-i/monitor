@@ -7,6 +7,7 @@
 #include <linux/module.h>
 #include <linux/fs.h>
 #include <linux/cdev.h>
+#include <linux/device.h>
 
 #undef DEBUGPRINT
 #ifdef DEBUGPRINT
@@ -20,8 +21,13 @@
 #endif
 #undef DEBUGPRINT
 
+#ifndef MONITOR_MAJOR
+    #define MONITOR_MAJOR 0
+#endif
+
 #define DEVICE "monitor"
 #define MONITOR_DEVICES 3
+#define GPIO_DEVICES 3
 
 /* Structures */
 
@@ -35,18 +41,16 @@ struct monitor_device {
     spinlock_t lock;
     struct monitor_device *next_device;
     dev_t device;
-    struct cdev monitor_cdev; 
+    struct cdev monitor_cdev;
+    int state; 
 };
 
 struct file_operations monitor_fops = {
     .owner = THIS_MODULE
 };
 
-struct monitor_device *devices;
-/* Function */
-int monitor_init(void);
-void monitor_cleanup(void);
-void initialize_monitor_device(struct monitor_device *, int);
+struct monitor_device *monitor_devices;
+struct class *monitor_class;
 
 /* Variables */
 

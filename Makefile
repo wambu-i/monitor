@@ -1,28 +1,30 @@
-# Makefile for the monitor device driver.
-
 DEBUG:=y
-DFLAGS:= -O -g -DDEBUGPRINT
+INCLUDE:=/home/wambui/openWRT/monitor/
+
+ifeq ($(DEBUG),y)
+	DEBFLAGS = -O -g -DDEBUGPRINT
+else
+	DEBFLAGS = -O2
+endif
+
 ifneq ($(KERNELRELEASE),)
-	# call from kernel build system
+	obj-m    := monitor.o
+	ccflags-y	:= -I$(INCLUDE) 
+	ccflags-y	+=	$(DEBFLAGS)
 
-	obj-$(CONFIG_MONITOR) += monitor.o
-
+	CONFIG_MONITOR_DEBUG	:= -DDEBUG
 	monitor-objs := code.o
 
 else
-	# external module build
-
-	EXTRA_FLAGS += -I$(PWD)
-
 	KDIR	:= /lib/modules/$(shell uname -r)/build
 	MDIR	:= /lib/modules/$(shell uname -r)
-	PWD	:= $(shell pwd)
+	PWD		:= $(shell pwd)
 	KREL	:= $(shell cd ${KDIR} && make -s kernelrelease)
 
 	export CONFIG_MONITOR := m
 
 	all:
-		$(MAKE) -C $(KDIR) $(EXTRA_FLAGS) M=$(PWD) modules
+		$(MAKE) -C $(KDIR)  M=$(PWD) modules
 
 	clean:
 		$(MAKE) -C $(KDIR) M=$(PWD) clean
@@ -34,11 +36,11 @@ else
 		rm -f ${MDIR}/kernel/monitor/monitor.ko
 		install -m644 -b -D monitor.ko ${MDIR}/kernel/monitor/monitor.ko
 		depmod -aq
-
+	
 	uninstall:
 		rm -rf ${MDIR}/kernel/monitor
 		depmod -aq
+	
+	.PHONY all clean
 
 endif
-
-.PHONY : all clean install uninstall
